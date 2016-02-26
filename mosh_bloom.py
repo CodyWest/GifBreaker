@@ -31,27 +31,22 @@ def mosh(interval, filename):
         #return the frame
         return frame
     #we use the list of frames in the loaded file
-    for stream in range(2*len(f.video)):
+    for stream in f.video:
         #make a new list to put in frames YOU decide
         newstream = []
         #append it with a i-frame to make it load fine in video player
         newstream.append(stream[0])
         #two variables for counting frames and interval
         ix = 0
-        jx = 0
         #stream is reduced by one since we have allready added one frame above
         for i in stream[1:]:
             ix += 1
             #if ix the counter of interval is < interval select normal frames
-            if ix < interval:
-                jx += 1
-                newstream.append(process_frame(stream[jx]))
+            newstream.append(process_frame(stream[ix]))
             #else bleed the reached frame for interval time
-            else:
-                newstream.append(newstream[-1])
-            #init interval
-            if ix > interval * 2:
-                ix = 0
+            if ix%interval == 0:
+                for n in range(interval):
+                    newstream.append(newstream[-1])
         #replace original stream with same length newstream
         stream.replace(newstream)
 
