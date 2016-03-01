@@ -14,7 +14,7 @@ from pymosh.mpeg4 import is_iframe
 import sys
 import os
 
-def mosh(interval, filename):
+def mosh(bloom, filename, wait):
     f = Index(filename) #loads in the index of frames in the given avi file
 
     buf = [None] # So I can assign to the closed-over buffer
@@ -42,11 +42,11 @@ def mosh(interval, filename):
         for i in stream[1:]:
             ix += 1
             #if ix the counter of interval is < interval select normal frames
-            newstream.append(process_frame(stream[ix]))
+            if ix < wait or ix > wait + bloom:
+                newstream.append(process_frame(stream[ix]))
             #else bleed the reached frame for interval time
-            if ix%interval == 0:
-                for n in range(interval):
-                    newstream.append(newstream[-1])
+            else:
+                newstream.append(newstream[-1])
         #replace original stream with same length newstream
         stream.replace(newstream)
 
@@ -55,7 +55,7 @@ def mosh(interval, filename):
     f.rebuild()
 
     # Finally, write the modified file .
-    f.write("moshed2_" + os.path.basename(filename))
+    f.write("moshed3_" + os.path.basename(filename))
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
@@ -70,4 +70,4 @@ if __name__ == '__main__':
         print 'Interval must be an integer >= 2.'
         sys.exit(1)
 
-    mosh(interval, sys.argv[2])
+    mosh(interval, sys.argv[2], int(sys.argv[3]))
