@@ -43,10 +43,10 @@ def mosh(bloom, filename, wait):
             ix += 1
             #if ix the counter of interval is < interval select normal frames
             if ix < wait or ix > wait + bloom:
-                newstream.append(process_frame(stream[ix]))
-            #else bleed the0 reached frame for interval time
+                f.index.add_frame(process_frame(stream[ix]))
+            #else bleed the reached frame for interval time
             else:
-                newstream.append(newstream[-1])
+                f.index.add_frame(newstream[-1])
         #replace original stream with same length newstream
         stream.replace(newstream)
 
@@ -55,7 +55,7 @@ def mosh(bloom, filename, wait):
     f.rebuild()
 
     # Finally, write the modified file .
-    f.write("bloom_" + os.path.basename(filename))
+    f.write("moshed4_" + os.path.basename(filename))
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:

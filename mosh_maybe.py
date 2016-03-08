@@ -48,14 +48,14 @@ def mosh(bloom, filename, wait):
             else:
                 newstream.append(newstream[-1])
         #replace original stream with same length newstream
-        stream.replace(newstream)
+        stream.extend(newstream)
 
     # Call rebuild to recombine the modified streams and perform any other
     # maintenance the file format needs for clean output.
     f.rebuild()
 
     # Finally, write the modified file .
-    f.write("bloom_" + os.path.basename(filename))
+    f.write("moshed_maybe_" + os.path.basename(filename))
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
