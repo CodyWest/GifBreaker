@@ -24,7 +24,7 @@ def write_shell(new_filename, length, duration, size):
     frames = []
     for i in range(length):
         frames.append(Image.new("RGB",size))
-    vv.writeAvi(new_filename, frames, duration)
+    vv.writeAvi("shell.avi", frames, duration)
 
 def process_frame(frame, buf):
     """Process a frame, holding onto one P-frame at a time, which is used to
@@ -62,6 +62,15 @@ def bloom(old_filename, new_filename, wait, bloom):
             gstream.replace(newstream)
     g.rebuild()
     g.write(new_filename) #Writes final gif
+
+#def shmear(old_filename, new_filename):
+#    '''Creates an avi with each of the P-frames doubled, hopefully creating a blurring effect'''
+#    f = Index(old_filename)
+#    write_shell(new_filename, count_frames(f)*2, .1, find_image_size(old_filename))
+
+#    buf = []
+
+#    g = Index
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
