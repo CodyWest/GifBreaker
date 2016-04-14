@@ -6,7 +6,7 @@ from visvis.vvmovie import images2avi as vv
 from PIL import Image
 
 def count_frames(index):
-    '''counts frames, given an indexed avi'''
+    '''Returns the number of frames in an avi, given an Index based on the avi'''
     number_of_frames = 0
     for stream in index.video:
         for i in stream:
@@ -14,21 +14,20 @@ def count_frames(index):
     return number_of_frames
 
 def find_image_size(old_filename):
-    '''finds dimensions of given avi'''
+    '''Returns the dimensions of an avi, given the avi'''
     images = vv.readAvi(old_filename, False)
     image = images[0]
     return image.size
 
 def write_shell(new_filename, length, duration, size):
-    '''writes an avi containing only black frames of the intended final size, length, and duration'''
+    '''Writes an avi containing only black frames of the intended final dimensions, frame length, and duration'''
     frames = []
     for i in range(length):
         frames.append(Image.new("RGB",size))
     vv.writeAvi("shell.avi", frames, duration)
 
 def process_frame(frame, buf):
-    """Process a frame, holding onto one P-frame at a time, which is used to
-    replace any I-frames encountered."""
+    '''Determines if given frame is a p-frame or an i-frame.  If it is an i-frame, the buffer stays the same and it returns the frame held in the buffer.  If it is a p-frame, it replaces the buffer with the frame, and returns the frame.'''
     #if there is no frame in buf or the frame is not i-frame
     if buf[0] == None or not is_iframe(frame):
         #then buf is the seen p-frame 
@@ -41,14 +40,14 @@ def process_frame(frame, buf):
     #we use the list of frames in the loaded file
 
 def bloom(old_filename, new_filename, wait, bloom):
-    '''Creates an avi that behaves normally for (wait) frames, copies the last frame for (bloom) frames, and then continues normally until the end of the avi''' 
+    '''Creates an avi that behaves normally for (wait) frames, copies the frame after the wait for (bloom) frames, and then continues normally until the end of the avi''' 
     f = Index(old_filename) #Allows original avi to be accessed by pymosh
-    write_shell(new_filename, count_frames(f)+bloom, .05, find_image_size(old_filename)) #Creates a blank gif to be written into
+    write_shell(new_filename, count_frames(f)+bloom, .05, find_image_size(old_filename)) #Creates a blank avi to be written into
 
-    buf = [None] # So I can assign to the closed-over buffer
+    buf = [None] #Stores most recent p-frame, to be used when processing frames
     
     g = Index("shell.avi") #Allows the shell avi to be written into by pymosh
-    for stream in f.video: #Takes desired frames from old avi, copies them in the right order
+    for stream in f.video: #Puts the frames from the old avi in the desired order in newstream
         newstream = []
         newstream.append(stream[0])
         ix = 0
@@ -61,17 +60,17 @@ def bloom(old_filename, new_filename, wait, bloom):
         for gstream in g.video: #Replaces shell's black frames with old avi's frames
             gstream.replace(newstream)
     g.rebuild()
-    g.write(new_filename) #Writes final gif
+    g.write(new_filename) #Writes final avi
 
 def shmear(old_filename, new_filename):
-    '''Creates an avi with each of the P-frames doubled, hopefully creating a blurring effect'''
-    f = Index(old_filename)
-    write_shell(new_filename, count_frames(f)*2-1, .1, find_image_size(old_filename))
+    '''Creates an avi with each of the P-frames doubled.'''
+    f = Index(old_filename) #Allows original avi to be accessed by pymosh
+    write_shell(new_filename, count_frames(f)*2-1, .1, find_image_size(old_filename)) #Creates a blank avi to be written into
 
-    buf = [None]
+    buf = [None] #Stores most recent p-frame, to be used when processing frames
 
-    g = Index("shell.avi")
-    for stream in f.video:
+    g = Index("shell.avi") #Allows the shell avi to be written into by pymosh
+    for stream in f.video: #Puts each motion frame from the old avi twice into the new avi
         newstream = []
         newstream.append(stream[0])
         ix = 0
@@ -79,40 +78,39 @@ def shmear(old_filename, new_filename):
             ix+=1
             newstream.append(process_frame(stream[ix], buf))
             newstream.append(process_frame(stream[ix], buf))
-        for gstream in g.video:
+        for gstream in g.video: #Replaces shell's black frames with old avi's frames
             gstream.replace(newstream)
     g.rebuild()
-    g.write(new_filename)
+    g.write(new_filename) #Writes final avi
 
 def overlay(old_filename_1, old_filename_2, new_filename):
     '''Creates an avi where the motion of old_filename_2 is layed over old_filename_1'''
     size = find_image_size(old_filename_1)
-    if size != find_image_size(old_filename_2):
-        print 'Please only overlay gifs of the same dimensions'
-        return None
-    e = Index(old_filename_1)
-    f = Index(old_filename_2)
-    write_shell(new_filename, count_frames(f)+count_frames(g), .2, size)
+    if size != find_image_size(old_filename_2): #If the avi's have different dimensions, send an error and terminate function
+        return 'Please only overlay gifs of the same dimensions'
+    e = Index(old_filename_1) #Allows first old avi to be accessed by pymosh
+    f = Index(old_filename_2) #Allows second old avi to be accessed by pymosh
+    write_shell(new_filename, count_frames(e)+count_frames(f), .1, size) #Creates a blank avi to be written into
 
-    buf = [None]
+    buf = [None] #Stores most recent p-frame, to be used when processing frames
 
-    g = Index("shell.avi")
-    newstream = []
-    for stream in e.video:
-        newstream.append(process_frame(stream[0]))
+    g = Index("shell.avi") #Allows the shell avi to be written into by pymosh
+    newstream = [] #A list to store frames in, is later turned into the final avi
+    for stream in e.video: #Puts all of first avi's frames into newstream, processing each frame
+        newstream.append(process_frame(stream[0], buf))
         ix = 0
         for i in stream[1:]:
             ix+=1
-            newstream.append(process_frame(stream[ix]))
-    for stream in f.video:
+            newstream.append(process_frame(stream[ix], buf))
+    for stream in f.video: #Puts all of second avi's frames into newstream, processing each frame
         ix = 0
         for i in stream:
-            newstream.append(process_frame(stream[ix]))
+            newstream.append(process_frame(stream[ix], buf))
             ix+=1
-    for stream in g.video:
+    for stream in g.video: #Replaces shell's black frames with old avi's frames
         stream.replace(newstream)
     g.rebuild()
-    g.write(new_filename)
+    g.write(new_filename) #Writes final avi
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
