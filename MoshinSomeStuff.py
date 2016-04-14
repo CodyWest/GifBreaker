@@ -63,27 +63,69 @@ def bloom(old_filename, new_filename, wait, bloom):
     g.rebuild()
     g.write(new_filename) #Writes final gif
 
-#def shmear(old_filename, new_filename):
-#    '''Creates an avi with each of the P-frames doubled, hopefully creating a blurring effect'''
-#    f = Index(old_filename)
-#    write_shell(new_filename, count_frames(f)*2, .1, find_image_size(old_filename))
+def shmear(old_filename, new_filename):
+    '''Creates an avi with each of the P-frames doubled, hopefully creating a blurring effect'''
+    f = Index(old_filename)
+    write_shell(new_filename, count_frames(f)*2-1, .1, find_image_size(old_filename))
 
-#    buf = []
+    buf = [None]
 
-#    g = Index
+    g = Index("shell.avi")
+    for stream in f.video:
+        newstream = []
+        newstream.append(stream[0])
+        ix = 0
+        for i in stream[1:]:
+            ix+=1
+            newstream.append(process_frame(stream[ix], buf))
+            newstream.append(process_frame(stream[ix], buf))
+        for gstream in g.video:
+            gstream.replace(newstream)
+    g.rebuild()
+    g.write(new_filename)
+
+def overlay(old_filename_1, old_filename_2, new_filename):
+    '''Creates an avi where the motion of old_filename_2 is layed over old_filename_1'''
+    size = find_image_size(old_filename_1)
+    if size != find_image_size(old_filename_2):
+        print 'Please only overlay gifs of the same dimensions'
+        return None
+    e = Index(old_filename_1)
+    f = Index(old_filename_2)
+    write_shell(new_filename, count_frames(f)+count_frames(g), .2, size)
+
+    buf = [None]
+
+    g = Index("shell.avi")
+    newstream = []
+    for stream in e.video:
+        newstream.append(process_frame(stream[0]))
+        ix = 0
+        for i in stream[1:]:
+            ix+=1
+            newstream.append(process_frame(stream[ix]))
+    for stream in f.video:
+        ix = 0
+        for i in stream:
+            newstream.append(process_frame(stream[ix]))
+            ix+=1
+    for stream in g.video:
+        stream.replace(newstream)
+    g.rebuild()
+    g.write(new_filename)
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
         print 'Usage: {0} interval filename'.format(sys.argv[0])
         sys.exit(1)
 
-    try:
+''' try:
         wait = int(sys.argv[3])
         if wait < 2:
             raise ValueError
     except ValueError:
         print 'Interval must be an integer >= 2.'
-        sys.exit(1)
+        sys.exit(1)'''
 
-    bloom(sys.argv[1], sys.argv[2], int(sys.argv[3]), int(sys.argv[4]))
+overlay(sys.argv[1], sys.argv[2], sys.argv[3])
         
