@@ -19,7 +19,7 @@ def find_image_size(old_filename):
     image = images[0]
     return image.size
 
-def write_shell(new_filename, length, duration, size):
+def write_shell(length, duration, size):
     '''Writes an avi containing only black frames of the intended final dimensions, frame length, and duration'''
     frames = []
     for i in range(length):
@@ -37,12 +37,12 @@ def process_frame(frame, buf):
         frame = buf[0]
         #return the frame
     return frame
-    #we use the list of frames in the loaded file
+
 
 def bloom(old_filename, new_filename, wait, bloom):
     '''Creates an avi that behaves normally for (wait) frames, copies the frame after the wait for (bloom) frames, and then continues normally until the end of the avi''' 
     f = Index(old_filename) #Allows original avi to be accessed by pymosh
-    write_shell(new_filename, count_frames(f)+bloom, .05, find_image_size(old_filename)) #Creates a blank avi to be written into
+    write_shell(count_frames(f)+bloom, .05, find_image_size(old_filename)) #Creates a blank avi to be written into
 
     buf = [None] #Stores most recent p-frame, to be used when processing frames
     
@@ -61,11 +61,12 @@ def bloom(old_filename, new_filename, wait, bloom):
             gstream.replace(newstream)
     g.rebuild()
     g.write(new_filename) #Writes final avi
+    os.remove(os.getcwd() + "/shell.avi") #Deletes shell avi created by write_shell
 
 def shmear(old_filename, new_filename):
     '''Creates an avi with each of the P-frames doubled.'''
     f = Index(old_filename) #Allows original avi to be accessed by pymosh
-    write_shell(new_filename, count_frames(f)*2-1, .1, find_image_size(old_filename)) #Creates a blank avi to be written into
+    write_shell(count_frames(f)*2-1, .1, find_image_size(old_filename)) #Creates a blank avi to be written into
 
     buf = [None] #Stores most recent p-frame, to be used when processing frames
 
@@ -82,6 +83,7 @@ def shmear(old_filename, new_filename):
             gstream.replace(newstream)
     g.rebuild()
     g.write(new_filename) #Writes final avi
+    os.remove(os.getcwd() + "/shell.avi") #Deletes shell avi created by write_shell
 
 def overlay(old_filename_1, old_filename_2, new_filename):
     '''Creates an avi where the motion of old_filename_2 is layed over old_filename_1'''
@@ -90,7 +92,7 @@ def overlay(old_filename_1, old_filename_2, new_filename):
         return 'Please only overlay gifs of the same dimensions'
     e = Index(old_filename_1) #Allows first old avi to be accessed by pymosh
     f = Index(old_filename_2) #Allows second old avi to be accessed by pymosh
-    write_shell(new_filename, count_frames(e)+count_frames(f), .1, size) #Creates a blank avi to be written into
+    write_shell(count_frames(e)+count_frames(f), .1, size) #Creates a blank avi to be written into
 
     buf = [None] #Stores most recent p-frame, to be used when processing frames
 
@@ -111,6 +113,7 @@ def overlay(old_filename_1, old_filename_2, new_filename):
         stream.replace(newstream)
     g.rebuild()
     g.write(new_filename) #Writes final avi
+    os.remove(os.getcwd() + "/shell.avi") #Deletes shell avi created by write_shell
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
@@ -125,5 +128,5 @@ if __name__ == '__main__':
         print 'Interval must be an integer >= 2.'
         sys.exit(1)'''
 
-overlay(sys.argv[1], sys.argv[2], sys.argv[3])
+bloom(sys.argv[1], sys.argv[2], int(sys.argv[3]), int(sys.argv[4]))
         
