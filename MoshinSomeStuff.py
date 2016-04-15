@@ -13,9 +13,9 @@ def count_frames(index):
             number_of_frames += 1
     return number_of_frames
 
-def find_image_size(old_filename):
+def find_image_size(filename):
     '''Returns the dimensions of an avi, given the avi'''
-    images = vv.readAvi(old_filename, False)
+    images = vv.readAvi(filename, False)
     image = images[0]
     return image.size
 
