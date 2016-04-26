@@ -22,7 +22,7 @@ def find_image_size(filename):
     return image.size
 
 def write_shell(length, duration, size):
-    '''Writes an avi containing only black frames of the intended final dimensions, frame length, and duration'''
+    '''Writes an avi containing only black frames of the intended final dimensions, frame length, and frame duration'''
     frames = []
     for i in range(length):
         frames.append(Image.new("RGB",size))
@@ -41,6 +41,7 @@ def process_frame(frame, buf):
     return frame
 
 def find_framerate(filename):
+    '''Given an avi, finds the framerate of the avi'''
     if __name__ == '__main__' :
  
         video = cv2.VideoCapture("//Users/Programmer/Desktop/peacock.avi");
@@ -60,6 +61,7 @@ def find_framerate(filename):
         video.release();
 
 def find_frame_duration(filename):
+    '''Converts the framerate from find_framerate into a frame duration'''
     duration = 1/find_framerate(filename)
     return duration
 
