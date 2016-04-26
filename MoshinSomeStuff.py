@@ -4,6 +4,7 @@ import sys
 import os
 from visvis.vvmovie import images2avi as vv
 from PIL import Image
+import cv2
 
 def count_frames(index):
     '''Returns the number of frames in an avi, given an Index based on the avi'''
@@ -11,6 +12,7 @@ def count_frames(index):
     for stream in index.video:
         for i in stream:
             number_of_frames += 1
+    print number_of_frames
     return number_of_frames
 
 def find_image_size(filename):
@@ -38,11 +40,34 @@ def process_frame(frame, buf):
         #return the frame
     return frame
 
+def find_framerate(filename):
+    if __name__ == '__main__' :
+ 
+        video = cv2.VideoCapture("//Users/Programmer/Desktop/peacock.avi");
+     
+        # Find OpenCV version
+        (major_ver, minor_ver, subminor_ver) = (cv2.__version__).split('.')
+     
+        if int(major_ver)  < 3 :
+            fps = video.get(cv2.cv.CV_CAP_PROP_FPS)
+            print "Frames per second using video.get(cv2.cv.CV_CAP_PROP_FPS): {0}".format(fps)
+            return float(fps)
+        else :
+            fps = video.get(cv2.CAP_PROP_FPS)
+            print "Frames per second using video.get(cv2.CAP_PROP_FPS) : {0}".format(fps)
+            return float(fps)
+    
+        video.release();
+
+def find_frame_duration(filename):
+    duration = 1/find_framerate(filename)
+    return duration
+
 
 def bloom(old_filename, new_filename, wait, bloom):
     '''Creates an avi that behaves normally for (wait) frames, copies the frame after the wait for (bloom) frames, and then continues normally until the end of the avi''' 
     f = Index(old_filename) #Allows original avi to be accessed by pymosh
-    write_shell(count_frames(f)+bloom, .05, find_image_size(old_filename)) #Creates a blank avi to be written into
+    write_shell(count_frames(f)+bloom, find_frame_duration(old_filename), find_image_size(old_filename)) #Creates a blank avi to be written into
 
     buf = [None] #Stores most recent p-frame, to be used when processing frames
     
@@ -66,7 +91,7 @@ def bloom(old_filename, new_filename, wait, bloom):
 def shmear(old_filename, new_filename):
     '''Creates an avi with each of the P-frames doubled.'''
     f = Index(old_filename) #Allows original avi to be accessed by pymosh
-    write_shell(count_frames(f)*2-1, .1, find_image_size(old_filename)) #Creates a blank avi to be written into
+    write_shell(count_frames(f)*2-1, find_frame_duration(old_filename), find_image_size(old_filename)) #Creates a blank avi to be written into
 
     buf = [None] #Stores most recent p-frame, to be used when processing frames
 
@@ -92,7 +117,7 @@ def overlay(old_filename_1, old_filename_2, new_filename):
         return 'Please only overlay gifs of the same dimensions'
     e = Index(old_filename_1) #Allows first old avi to be accessed by pymosh
     f = Index(old_filename_2) #Allows second old avi to be accessed by pymosh
-    write_shell(count_frames(e)+count_frames(f), .1, size) #Creates a blank avi to be written into
+    write_shell(count_frames(e)+count_frames(f), find_frame_duration(old_filename_1), size) #Creates a blank avi to be written into
 
     buf = [None] #Stores most recent p-frame, to be used when processing frames
 
