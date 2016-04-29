@@ -1,0 +1,67 @@
+from flask import Flask, request
+app = Flask(__name__)
+
+@app.route('/TYPECHOOSE', methods=['GET'])
+def typechoose():
+    '''Displays mosh type selections (overlay,shmear,bloom), get request transfers to respective URL based on selection.'''
+    fileObject = file('GifBreakerUI_homepage.html','r')
+    output  = fileObject.read()
+    fileObject.close()
+    return output
+
+@app.route('/BLOOM', methods=['GET'])
+def bloom ():
+    '''Display settings for bloom and asks for user input (oldFileName,newFilenName,wait,moshDurationl,moshType=bloom). Post request selections to (/FINAL)'''
+    fileObject = file('GifBreakerUI_Bloom.html','r')
+    output  = fileObject.read()
+    fileObject.close()
+    return output
+@app.route('/SHMEAR', methods=['GET'])
+def shmear ():
+    '''Display settings for shmear and asks for user input (oldFileName,newFileName,moshType=shmear). Post request selections to (/FINAL)'''
+    fileObject = file('GifBreakerUI_Shmear.html','r')
+    output  = fileObject.read()
+    fileObject.close()
+    return output
+
+@app.route('/OVERLAY', methods=['GET'])
+def overlay ():
+    '''Display settings for overlay and asks for user input (oldFileName,newFileName,moshType=overlay). Post request selections to (/FINAL)'''
+    fileObject = file('GifBreakerUI_Overlay.html','r')
+    output  = fileObject.read()
+    fileObject.close()
+    return output
+
+@app.route('/FINAL', methods=['GET', 'POST'])
+def final ():
+    '''Recieves posts from previous forms (/BLOOM, /OVERLAY, /SHMEAR), inputs (oldFileName,newFilenName,wait,moshDurationl,moshType=x) makes a post request with that info to sent to back end. Makes a get request to recieve finished product from back end. Displays download link for moshed file received through get request.'''
+    #return None
+    if request.form['moshtype'] == 'overlay':
+        print "1"
+        f2 = request.files['file2']
+        print "2"
+        fileObject=file('upload2','wb')
+        print "3"
+        fileObject.write(f2.read())
+        print "4"
+        fileObject.close()
+        print "5"
+    elif request.form['moshtype'] == 'bloom':
+        duration= request.form['duration']
+        wait = request.form['wait']
+    elif request.form['moshtype'] == 'shmear':
+        print "hi"
+    f1 = request.files['file1']
+    print "6"
+    fileObject= file('upload1','wb')
+    print "7"
+    fileObject.write(f1.read())
+    print "8"
+    fileObject.close()
+    print "9"
+    return "hi"
+#"Hello World I'm in debug mode" + request.form['duration'] +request.form['moshtype']
+    
+#+'of type:'+str(type(request.form['file']))+':'+'with properties:'+str(dir(request.form['file']))
+
+app.run(debug=True)

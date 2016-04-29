@@ -12,7 +12,6 @@ def count_frames(index):
     for stream in index.video:
         for i in stream:
             number_of_frames += 1
-    print number_of_frames
     return number_of_frames
 
 def find_image_size(filename):
@@ -44,18 +43,16 @@ def find_framerate(filename):
     '''Given an avi, finds the framerate of the avi'''
     if __name__ == '__main__' :
  
-        video = cv2.VideoCapture("//Users/Programmer/Desktop/peacock.avi");
+        video = cv2.VideoCapture(filename);
      
         # Find OpenCV version
         (major_ver, minor_ver, subminor_ver) = (cv2.__version__).split('.')
      
         if int(major_ver)  < 3 :
             fps = video.get(cv2.cv.CV_CAP_PROP_FPS)
-            print "Frames per second using video.get(cv2.cv.CV_CAP_PROP_FPS): {0}".format(fps)
             return float(fps)
         else :
             fps = video.get(cv2.CAP_PROP_FPS)
-            print "Frames per second using video.get(cv2.CAP_PROP_FPS) : {0}".format(fps)
             return float(fps)
     
         video.release();
@@ -155,5 +152,5 @@ if __name__ == '__main__':
         print 'Interval must be an integer >= 2.'
         sys.exit(1)'''
 
-bloom(sys.argv[1], sys.argv[2], int(sys.argv[3]), int(sys.argv[4]))
+#overlay(sys.argv[1], sys.argv[2], (sys.argv[3]))
         
